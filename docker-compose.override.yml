@@ -1,0 +1,5 @@
+# Local dev (auto-loaded by `docker compose up`). Jenkins CI does not use this file.
+services:
+  web:
+    ports:
+      - "8081:80"

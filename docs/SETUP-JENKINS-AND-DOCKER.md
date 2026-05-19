@@ -46,6 +46,8 @@ cd c:\xampp\htdocs\UpHub
 docker compose up -d --build
 ```
 
+Uses `docker-compose.yml` + `docker-compose.override.yml` (port **8081**). Jenkins CI uses port **8082** only and does not load the override file.
+
 What this does:
 
 | Service | Role |

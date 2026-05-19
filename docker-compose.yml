@@ -22,8 +22,6 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "8081:80"
     environment:
       APP_BASE: /UpHub
       APP_URL: http://localhost:8081/UpHub
