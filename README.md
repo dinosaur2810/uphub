@@ -28,6 +28,25 @@ Stop:
 docker compose down
 ```
 
+## Deploy + auto-rebuild (local → GitHub → Jenkins)
+
+1. Copy `.env.jenkins.example` to `.env.jenkins` and set `JENKINS_API_TOKEN` (user must be `tagayanfinal`, not the token label).
+2. From the project folder:
+
+```powershell
+.\scripts\deploy-and-build.ps1 -Message "your commit message"
+```
+
+This pushes to GitHub and queues the Jenkins **uphub** job.
+
+Trigger build only (no git push):
+
+```powershell
+.\scripts\trigger-jenkins-build.ps1
+```
+
+**Jenkins job must be configured:** Git URL `https://github.com/dinosaur2810/uphub.git`, branch `*/main`.
+
 ## Jenkins
 
 Pipeline job **uphub** clones this repo and runs `Jenkinsfile`:

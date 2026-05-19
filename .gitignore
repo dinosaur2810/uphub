@@ -5,6 +5,7 @@
 !/uploads/.gitkeep
 .env
 .env.local
+.env.jenkins
 *.log
 .DS_Store
 Thumbs.db
