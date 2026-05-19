@@ -51,7 +51,8 @@ pipeline {
                         '''
                     } else {
                         bat '''
-                            docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
+                            docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v --remove-orphans
+                            docker rm -f uphub-db uphub-web 2>nul
                             docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait
                             docker compose -f docker-compose.yml -f docker-compose.ci.yml ps
                             curl -f http://localhost:%APP_PORT%/index.php

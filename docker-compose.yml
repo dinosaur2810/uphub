@@ -1,7 +1,6 @@
 services:
   db:
     image: mariadb:10.11
-    container_name: uphub-db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -22,7 +21,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: uphub-web
     restart: unless-stopped
     ports:
       - "8081:80"
