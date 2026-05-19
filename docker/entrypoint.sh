@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+chown -R www-data:www-data /var/www/html/uploads 2>/dev/null || true
+chmod -R 775 /var/www/html/uploads 2>/dev/null || true
+
+exec apache2-foreground

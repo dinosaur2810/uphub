@@ -1,0 +1,13 @@
+/.agents/
+/vendor/
+/config/config.local.php
+/uploads/*
+!/uploads/.gitkeep
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+composer.phar
+.idea/
+.vscode/

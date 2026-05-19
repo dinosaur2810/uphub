@@ -1,0 +1,7 @@
+# Jenkins CI overlay: alternate host port to avoid conflicts with local dev (8081).
+services:
+  web:
+    ports:
+      - "8082:80"
+    environment:
+      APP_URL: http://localhost:8082

@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: uphub-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: uphub
+      MYSQL_USER: uphub
+      MYSQL_PASSWORD: uphub
+    volumes:
+      - ./sql/install.sql:/docker-entrypoint-initdb.d/01-install.sql:ro
+      - uphub_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uphub-web
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      APP_BASE: ""
+      APP_URL: http://localhost:8081
+      DB_HOST: db
+      DB_NAME: uphub
+      DB_USER: uphub
+      DB_PASS: uphub
+      MAILER_DSN: "null://null"
+      MAILER_FROM: noreply@uphub.local
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  uphub_db_data:

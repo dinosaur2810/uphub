@@ -1,0 +1,13 @@
+.git
+.gitignore
+.agents
+.env
+.env.*
+config/config.local.php
+uploads/*
+!uploads/.gitkeep
+*.md
+!README.md
+composer.phar
+.idea
+.vscode

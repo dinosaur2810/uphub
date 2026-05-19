@@ -1,0 +1,30 @@
+<?php
+/**
+ * UpLiftHub application configuration template.
+ * Copy this to config.php and fill in your details.
+ */
+
+declare(strict_types=1);
+
+define('APP_BASE', '/UpHub');
+define('APP_URL', 'http://localhost/UpHub');
+
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'UpHub');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_CHARSET', 'utf8mb4');
+
+define('UPLOAD_MAX_IMAGE_BYTES', 2 * 1024 * 1024);
+define('ALLOWED_IMAGE_MIMES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+// 1. Get from Google Cloud Console
+define('GOOGLE_MAPS_API_KEY', 'YOUR_GOOGLE_MAPS_API_KEY');
+
+// 2. Get a Gmail "App Password" (16 chars)
+// Format: gmail+smtp://USER%40gmail.com:PASSWORD@default
+define('MAILER_DSN', 'gmail+smtp://YOUR_EMAIL%40gmail.com:YOUR_APP_PASSWORD@default');
+define('MAILER_FROM', 'your-email@gmail.com');
+
+define('SESSION_NAME', 'UPLIFTHUB_SESS');
+define('RESET_TOKEN_HOURS', 24);

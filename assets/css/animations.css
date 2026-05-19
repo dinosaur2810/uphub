@@ -1,0 +1,190 @@
+/* ================================================================
+   UpLiftHub — Scroll Reveal Animation System
+   Lightweight, performant reveal animations using CSS transitions.
+   Triggered by IntersectionObserver in scroll-reveal.js.
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   Scroll Progress Bar
+   --------------------------------------------------------------- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--uplift-indigo, #4f46e5), #818cf8);
+  z-index: 9999;
+  transition: width 0.05s linear;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------
+   Base Reveal State (invisible, ready to animate)
+   --------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transition:
+    opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+}
+
+/* ---------------------------------------------------------------
+   Reveal Variations (starting positions)
+   --------------------------------------------------------------- */
+
+/* Slide up from below */
+.reveal-up {
+  transform: translateY(40px);
+}
+
+/* Fade in from left */
+.reveal-left {
+  transform: translateX(-50px);
+}
+
+/* Fade in from right */
+.reveal-right {
+  transform: translateX(50px);
+}
+
+/* Scale up from slightly smaller */
+.reveal-scale {
+  transform: scale(0.92);
+}
+
+/* Pure fade — no movement */
+.reveal-fade {
+  transform: none;
+}
+
+/* ---------------------------------------------------------------
+   Visible State (applied by JS)
+   --------------------------------------------------------------- */
+.reveal.reveal-visible {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* ---------------------------------------------------------------
+   Stagger Delays (for card grids)
+   Each child gets a progressive delay for a cascading effect.
+   --------------------------------------------------------------- */
+.reveal-stagger > .reveal:nth-child(1)  { transition-delay: 0ms; }
+.reveal-stagger > .reveal:nth-child(2)  { transition-delay: 100ms; }
+.reveal-stagger > .reveal:nth-child(3)  { transition-delay: 200ms; }
+.reveal-stagger > .reveal:nth-child(4)  { transition-delay: 300ms; }
+.reveal-stagger > .reveal:nth-child(5)  { transition-delay: 400ms; }
+.reveal-stagger > .reveal:nth-child(6)  { transition-delay: 500ms; }
+.reveal-stagger > .reveal:nth-child(7)  { transition-delay: 600ms; }
+.reveal-stagger > .reveal:nth-child(8)  { transition-delay: 700ms; }
+.reveal-stagger > .reveal:nth-child(9)  { transition-delay: 800ms; }
+
+/* ---------------------------------------------------------------
+   Hero-Specific Animations
+   --------------------------------------------------------------- */
+
+/* Floating stats: gentle continuous float */
+@keyframes floatStat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.floating-stat {
+  animation: floatStat 4s ease-in-out infinite;
+}
+
+.floating-stat:nth-child(2) {
+  animation-delay: 1.5s;
+}
+
+/* Hero image entrance */
+.hero-entrance {
+  opacity: 0;
+  transform: translateY(30px) scale(0.96);
+  transition:
+    opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s,
+    transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s;
+}
+
+.hero-entrance.reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hero text stagger */
+.hero-text-reveal > * {
+  opacity: 0;
+  transform: translateY(25px);
+  transition:
+    opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hero-text-reveal.reveal-visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0ms; }
+.hero-text-reveal.reveal-visible > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 120ms; }
+.hero-text-reveal.reveal-visible > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 240ms; }
+.hero-text-reveal.reveal-visible > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 360ms; }
+.hero-text-reveal.reveal-visible > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 480ms; }
+
+/* ---------------------------------------------------------------
+   Logo Ticker: smooth infinite marquee
+   --------------------------------------------------------------- */
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.logo-ticker-track {
+  display: flex;
+  gap: 4rem;
+  animation: tickerScroll 25s linear infinite;
+  width: max-content;
+}
+
+.logo-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* ---------------------------------------------------------------
+   Newsletter CTA: subtle pulse glow
+   --------------------------------------------------------------- */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.3); }
+  50%      { box-shadow: 0 0 20px 5px rgba(79, 70, 229, 0.15); }
+}
+
+.newsletter-box.reveal-visible {
+  animation: pulseGlow 3s ease-in-out 1;
+}
+
+/* ---------------------------------------------------------------
+   Accessibility: Respect user motion preferences
+   --------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .hero-text-reveal > *,
+  .hero-entrance {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .floating-stat {
+    animation: none !important;
+  }
+
+  .logo-ticker-track {
+    animation: none !important;
+  }
+
+  .scroll-progress {
+    display: none !important;
+  }
+}
