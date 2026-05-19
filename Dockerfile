@@ -28,6 +28,6 @@ RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
 EXPOSE 80
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
-    CMD curl -f http://localhost/index.php || exit 1
+    CMD curl -f http://localhost/UpHub/index.php || exit 1
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

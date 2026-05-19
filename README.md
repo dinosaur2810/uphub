@@ -1,62 +1,72 @@
 # UpHub
 
-A premium, open-source platform designed to bridge the gap between job seekers, recruiters, and community support services. Built with a human-first philosophy, it combines robust backend functionality with a cinematic, modern Indigo design system.
+A premium, open-source platform for job seekers, recruiters, and community support services — PHP, MySQL, Docker, and Jenkins CI.
 
-## Stack
+**GitHub:** https://github.com/dinosaur2810/uphub  
 
-- PHP 8.2+ with Apache
-- MySQL / MariaDB
-- Symfony Mailer (Composer)
-- Docker & Jenkins CI
+---
 
-## Local setup (XAMPP)
+## Documentation (step-by-step)
 
-See [SETUP_GUIDE.md](SETUP_GUIDE.md). Copy `config/config.example.php` to `config/config.local.php` and set your database, maps, and mail credentials.
+| Guide | What it covers |
+|-------|----------------|
+| **[docs/SETUP-JENKINS-AND-DOCKER.md](docs/SETUP-JENKINS-AND-DOCKER.md)** | **Start here** — Docker on `localhost:8081`, create or recreate Jenkins pipeline `uphub` |
+| [SETUP_GUIDE.md](SETUP_GUIDE.md) | XAMPP, Google Maps, Gmail SMTP, database import |
+| [docs/JENKINS-GITHUB-WEBHOOK.md](docs/JENKINS-GITHUB-WEBHOOK.md) | GitHub webhooks and Jenkins token types |
 
-## Docker
+---
 
-```bash
+## Quick start — Docker
+
+```powershell
+cd c:\xampp\htdocs\UpHub
 docker compose up -d --build
 ```
 
-App: http://localhost:8081  
-Database: `uphub` / user `uphub` / password `uphub` (see `docker-compose.yml`)
+Open **http://localhost:8081/UpHub/** (same `/UpHub` path as XAMPP)
 
 Stop:
 
-```bash
+```powershell
 docker compose down
 ```
 
-## Deploy + auto-rebuild (local → GitHub → Jenkins)
-
-1. Copy `.env.jenkins.example` to `.env.jenkins` and set `JENKINS_API_TOKEN` (user must be `tagayanfinal`, not the token label).
-2. From the project folder:
+Redo from scratch:
 
 ```powershell
+docker compose down -v
+docker compose up -d --build
+```
+
+Full details → [docs/SETUP-JENKINS-AND-DOCKER.md](docs/SETUP-JENKINS-AND-DOCKER.md#part-1--docker-run-uphub-on-localhost8081)
+
+---
+
+## Quick start — Jenkins pipeline
+
+1. Open http://localhost:8080  
+2. **New Item** → name `uphub` → **Pipeline**  
+3. **Pipeline script from SCM** → Git → `https://github.com/dinosaur2810/uphub.git` → branch `*/main` → script `Jenkinsfile`  
+4. **Build Now**
+
+If the job was deleted, repeat the steps above (same job name and settings).
+
+Full details → [docs/SETUP-JENKINS-AND-DOCKER.md](docs/SETUP-JENKINS-AND-DOCKER.md#part-2--jenkins-new-pipeline-or-recreate-after-delete)
+
+---
+
+## Deploy (push to GitHub + Jenkins build)
+
+```powershell
+copy .env.jenkins.example .env.jenkins   # once: add JENKINS_USER + JENKINS_API_TOKEN
 .\scripts\deploy-and-build.ps1 -Message "your commit message"
 ```
 
-This pushes to GitHub and queues the Jenkins **uphub** job.
+---
 
-Trigger build only (no git push):
+## Stack
 
-```powershell
-.\scripts\trigger-jenkins-build.ps1
-```
-
-**Jenkins job must be configured:** Git URL `https://github.com/dinosaur2810/uphub.git`, branch `*/main`.
-
-## Jenkins
-
-Pipeline job **uphub** clones this repo and runs `Jenkinsfile`:
-
-1. Checkout from GitHub
-2. `docker compose build` (with CI port overlay)
-3. Start stack, health-check `index.php`, tear down
-
-Repository: https://github.com/dinosaur2810/uphub
-
-## License
-
-Open source — see project documentation for usage terms.
+- PHP 8.2 + Apache  
+- MariaDB / MySQL  
+- Symfony Mailer (Composer)  
+- Docker & Jenkins (`Jenkinsfile`)

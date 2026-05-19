@@ -25,8 +25,8 @@ services:
     ports:
       - "8081:80"
     environment:
-      APP_BASE: ""
-      APP_URL: http://localhost:8081
+      APP_BASE: /UpHub
+      APP_URL: http://localhost:8081/UpHub
       DB_HOST: db
       DB_NAME: uphub
       DB_USER: uphub

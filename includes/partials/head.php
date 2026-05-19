@@ -17,5 +17,15 @@ $title = $pageTitle ?? 'UpLiftHub';
   <?php if (str_contains($_SERVER['REQUEST_URI'], '/admin/') || str_contains($_SERVER['REQUEST_URI'], '/recruiter/') || str_contains($_SERVER['REQUEST_URI'], '/jobseeker/')): ?>
     <link rel="stylesheet" href="<?= e(app_url('assets/css/admin-premium.css')) ?>">
   <?php endif; ?>
+  <script>
+    window.UPLIFT = {
+      base: <?= json_encode(APP_BASE, JSON_THROW_ON_ERROR) ?>,
+      applyApi: <?= json_encode(app_url('api/apply.php'), JSON_THROW_ON_ERROR) ?>,
+      jobsApi: <?= json_encode(app_url('api/jobs.php'), JSON_THROW_ON_ERROR) ?>,
+      aidApi: <?= json_encode(app_url('api/aid.php'), JSON_THROW_ON_ERROR) ?>,
+      servicesApi: <?= json_encode(app_url('api/services.php'), JSON_THROW_ON_ERROR) ?>,
+      subscribeApi: <?= json_encode(app_url('api/subscribe.php'), JSON_THROW_ON_ERROR) ?>
+    };
+  </script>
 </head>
 <body class="uplift-body <?= (str_contains($_SERVER['REQUEST_URI'], '/admin/') || str_contains($_SERVER['REQUEST_URI'], '/recruiter/') || str_contains($_SERVER['REQUEST_URI'], '/jobseeker/')) ? 'admin-body' : '' ?>">
