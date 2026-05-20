@@ -135,7 +135,7 @@ docker compose up -d
 
 ---
 
-## Part 2 — Jenkins (new pipeline or recreate after delete)
+## Part 2 — Jenkins (Build → Test → Deploy Pipeline)
 
 ### Prerequisites
 
@@ -143,13 +143,36 @@ docker compose up -d
 - Plugins installed (from Jenkins plugin manager): **Pipeline**, **Git**, **GitHub**, **Docker** (Docker CLI on the Jenkins machine)  
 - **Git for Windows** installed at `C:\Program Files\Git\`  
 - **Docker Desktop** running (same as Part 1)
+- **Credentials API** registered in your system (for authentication)
 
 ### Step 1: Log in to Jenkins
 
 1. Open http://localhost:8080  
 2. Sign in with your Jenkins user (e.g. `tagayanfinal`).
 
-### Step 2: Point Jenkins to Git (one-time)
+### Step 3: Register Credentials API Token (for remote access)
+
+1. Click your username (top right) → **Security** (or **Configure**).  
+2. **API Token** → **Add new Token** → name it `uphub-remote-api` → **Generate**.  
+3. Copy the token immediately (shown only once).  
+4. **Save**.
+
+Store credentials securely:
+
+- **Username:** your Jenkins login id (e.g. `tagayanfinal`)  
+- **API Token:** the token (not your login password)
+
+You'll use this for remote builds: `http://localhost:8080/job/{job-name}/build?token=uphub-remote-api`
+
+### Step 4: Configure Remote Access (Manage Jenkins → Security)
+
+1. **Manage Jenkins** → **Security**  
+2. Enable **Trigger builds remotely** if not already enabled  
+3. **Authorization** → Set to **Logged-in users can do anything** or **Project-based Matrix Authorization**  
+4. Allow API token authentication  
+5. **Save**
+
+### Step 5: Point Jenkins to Git (one-time)
 
 Jenkins runs as a Windows service and must find `git.exe`.
 
@@ -162,20 +185,72 @@ Jenkins runs as a Windows service and must find `git.exe`.
    ```
 
 4. **Save**.
+### Step 6: Create Pipeline Jobs (Build, Test, Deploy)
 
-### Step 3: Create API token (for scripts / terminal)
+Create three separate pipeline jobs for the CI/CD workflow:
 
-1. Click your username (top right) → **Security** (or **Configure**).  
-2. **API Token** → **Add new Token** → name it `uphub-cli` → **Generate**.  
-3. Copy the token immediately (shown only once).  
-4. **Save**.
+#### Job 1: `uphub` (Build Stage)
 
-Use:
+1. Jenkins home → **New Item**  
+2. **Item name:** `uphub`  
+3. Select **Pipeline** → **OK**  
+4. **General**  
+   - Description: `UpHub — Build Stage (GitHub + Docker)`  
+   - ☑ **Build after other projects are built** → none (this is the first job)
+5. **Build Triggers**  
+   - ☑ **GitHub hook trigger for GITScm polling** (for GitHub webhooks)  
+   - Or ☑ **Poll SCM** → schedule `H/15 * * * *` (every 15 min)  
+   - ☑ **Trigger builds remotely** → Auth token: `uphub-remote-api`
+6. **Pipeline**  
+   - **Definition:** Pipeline script from SCM  
+   - **SCM:** Git  
+   - **Repository URL:** `https://github.com/dinosaur2810/uphub.git`  
+   - **Credentials:** (none for public repo, or add GitHub PAT if private)  
+   - **Branch Specifier:** `*/main`  
+   - **Script Path:** `Jenkinsfile`
+7. **Save**
 
-- **Username:** your Jenkins login id (e.g. `tagayanfinal`)  
-- **Password:** the API token (not your login password unless you choose that)
+#### Job 2: `uphub2` (Test Stage)
 
-Local project file (copy from example):
+1. Jenkins home → **New Item**  
+2. **Item name:** `uphub2`  
+3. Select **Pipeline** → **OK**  
+4. **General**  
+   - Description: `UpHub — Test Stage`  
+   - ☑ **Build after other projects are built** → `uphub` (triggers after build completes)
+5. **Build Triggers**  
+   - ☑ **Build after other projects are built** → Projects: `uphub`
+   - ☑ **Trigger builds remotely** → Auth token: `uphub-remote-api`
+6. **Pipeline**  
+   - **Definition:** Pipeline script from SCM  
+   - **SCM:** Git  
+   - **Repository URL:** `https://github.com/dinosaur2810/uphub.git`  
+   - **Credentials:** (same as uphub)  
+   - **Branch Specifier:** `*/main`  
+   - **Script Path:** `Jenkinsfile`
+7. **Save**
+
+#### Job 3: `uphub3` (Deploy Stage)
+
+1. Jenkins home → **New Item**  
+2. **Item name:** `uphub3`  
+3. Select **Pipeline** → **OK**  
+4. **General**  
+   - Description: `UpHub — Deploy Stage`  
+   - ☑ **Build after other projects are built** → `uphub2` (triggers after test completes)
+5. **Build Triggers**  
+   - ☑ **Build after other projects are built** → Projects: `uphub2`
+   - ☑ **Trigger builds remotely** → Auth token: `uphub-remote-api`
+6. **Pipeline**  
+   - **Definition:** Pipeline script from SCM  
+   - **SCM:** Git  
+   - **Repository URL:** `https://github.com/dinosaur2810/uphub.git`  
+   - **Credentials:** (same as uphub)  
+   - **Branch Specifier:** `*/main`  
+   - **Script Path:** `Jenkinsfile`
+7. **Save**
+
+### Step 7: Create `.env.jenkins` for local deployment
 
 ```powershell
 cd c:\xampp\htdocs\UpHub
@@ -189,89 +264,62 @@ Example `.env.jenkins`:
 JENKINS_URL=http://localhost:8080
 JENKINS_USER=tagayanfinal
 JENKINS_API_TOKEN=paste_your_token_here
+JENKINS_REMOTE_TOKEN=uphub-remote-api
 ```
 
-### Step 4: Create a new Pipeline job
+### Step 8: Run the pipeline manually
 
-Do this for a **new** job or if the old `uphub` job was **deleted**.
-
-1. Jenkins home → **New Item**  
-2. **Item name:** `uphub`  
-3. Select **Pipeline** → **OK**  
-4. **General**  
-   - Description: `UpHub — GitHub + Docker CI`  
-5. **Build Triggers** (optional)  
-   - ☑ **GitHub hook trigger for GITScm polling** (for webhooks later)  
-   - Or ☑ **Poll SCM** → schedule `H/15 * * * *` (every 15 min)  
-6. **Pipeline**  
-   - **Definition:** Pipeline script from SCM  
-   - **SCM:** Git  
-   - **Repository URL:**
-
-     ```
-     https://github.com/dinosaur2810/uphub.git
-     ```
-
-   - **Credentials:** none (public repo) or add GitHub PAT if private  
-   - **Branch Specifier:** `*/main`  
-   - **Script Path:** `Jenkinsfile`  
-7. **Save**
-
-### Step 5: Run the pipeline manually
-
-1. Open http://localhost:8080/job/uphub/  
-2. Click **Build Now**  
-3. Click build number → **Console Output**
-
-Expected stages:
-
-1. Checkout  
-2. Validate  
-3. Docker Build  
-4. Integration Test (port **8082** in CI; your local app stays on **8081**)
-
-Success ends with: `Finished: SUCCESS`
-
-### Step 6: Recreate pipeline if deleted
-
-If someone deleted the `uphub` job, repeat **Part 2, Step 4** exactly (same name `uphub`, same Git URL and branch).
-
-Nothing in GitHub needs to change — only recreate the job in Jenkins.
-
-Quick checklist:
-
-| Setting | Value |
-|---------|--------|
-| Job type | Pipeline |
-| Job name | `uphub` |
-| SCM | Git |
-| URL | `https://github.com/dinosaur2810/uphub.git` |
-| Branch | `*/main` |
-| Script path | `Jenkinsfile` |
-
-Then **Build Now**.
-
-### Step 7: Deploy from your PC (push + build)
-
-After `.env.jenkins` is configured:
+**Option A: Start the build chain locally (uphub → uphub2 → uphub3)**
 
 ```powershell
 cd c:\xampp\htdocs\UpHub
 .\scripts\deploy-and-build.ps1 -Message "my update"
 ```
 
-This will:
+This will push to GitHub and trigger `uphub` job via API. The chain continues:
+- ✓ Build (`uphub`) runs  
+- ✓ Test (`uphub2`) runs after build succeeds  
+- ✓ Deploy (`uphub3`) runs after test succeeds
 
-1. Commit and push to GitHub (`main`)  
-2. Trigger Jenkins build via API  
-
-Build only (no git push):
+**Option B: Build only (no git push)**
 
 ```powershell
 .\scripts\trigger-jenkins-build.ps1
 ```
 
-### Step 8: Fix common Jenkins errors
+**Option C: Manual UI trigger**
+
+1. Open http://localhost:8080/job/uphub/  
+2. Click **Build Now**  
+3. Watch the chain progress: uphub → uphub2 → uphub3
+4. Click each build number → **Console Output** to see logs
+
+### Step 9: Remote Trigger via API (from anywhere)
+
+Trigger the build chain remotely using your credentials API:
+
+```powershell
+$uri = "http://localhost:8080/job/uphub/build?token=uphub-remote-api"
+$user = "tagayanfinal"
+$token = "your_api_token_here"
+$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("$user`:$token")))
+
+Invoke-RestMethod -Uri $uri `
+  -Method Post `
+  -Headers @{ Authorization = "Basic $auth" } `
+  -ErrorAction Stop
+
+Write-Host "Build triggered successfully!"
+```
+
+Or from Linux/Mac:
+
+```bash
+curl -X POST http://localhost:8080/job/uphub/build?token=uphub-remote-api \
+  --user tagayanfinal:your_api_token_here
+```
+
+### Step 10: Recreate jobs if deleted
 
 | Error | Fix |
 |-------|-----|
@@ -280,8 +328,10 @@ Build only (no git push):
 | `container name already in use` | Run `docker compose down -v` in project folder; pull latest `main` (includes container name fix) |
 | `Failed to connect to localhost port 8082` | Start Docker Desktop; ensure Jenkins can run `docker compose` |
 | API `401 Unauthorized` | Use Jenkins **username** + **API token**; set variables before `Invoke-RestMethod` |
+| `Remote trigger not working` | Ensure **Trigger builds remotely** is checked; verify auth token in URL |
+| Jobs not chaining (uphub2 after uphub) | Check **Build after other projects are built** with correct job name; ensure build is stable |
 
-### Step 9: Reload Jenkins after manual config changes
+### Step 12: Reload Jenkins after manual config changes
 
 If you edit files under `C:\ProgramData\Jenkins\.jenkins\` by hand:
 
@@ -295,7 +345,16 @@ Restart-Service -Name Jenkins -Force
 
 ---
 
-## Part 3 — Quick reference
+## Part 3 — Quick Reference
+
+### Jenkins URLs
+
+| Job | URL | Purpose |
+|-----|-----|---------|
+| **Build** | http://localhost:8080/job/uphub/ | Compile + validate code |
+| **Test** | http://localhost:8080/job/uphub2/ | Run integration tests |
+| **Deploy** | http://localhost:8080/job/uphub3/ | Deploy to production |
+| **Dashboard** | http://localhost:8080 | View all jobs |
 
 ### Docker
 
@@ -307,15 +366,24 @@ docker compose down               # stop
 docker compose down -v            # stop + wipe DB
 ```
 
-### Jenkins
+### Jenkins Actions
 
 | Action | How |
 |--------|-----|
-| Open Jenkins | http://localhost:8080 |
-| Open job | http://localhost:8080/job/uphub/ |
-| New / recreated pipeline | **New Item** → Pipeline → configure as in Step 4 |
-| Manual build | **Build Now** |
-| Auto push + build | `.\scripts\deploy-and-build.ps1` |
+| Trigger build chain locally | `.\scripts\deploy-and-build.ps1 -Message "update"` |
+| Trigger build (no push) | `.\scripts\trigger-jenkins-build.ps1` |
+| Manual build (UI) | Visit job URL → **Build Now** |
+| View console | Click build number → **Console Output** |
+| Remote API trigger | `curl -X POST http://localhost:8080/job/uphub/build?token=uphub-remote-api --user user:token` |
+
+### Credentials
+
+| Item | Value |
+|------|-------|
+| Jenkins URL | http://localhost:8080 |
+| Username | your_jenkins_user (e.g. `tagayanfinal`) |
+| API Token | generated in **Security** (not your login password) |
+| Remote Token | `uphub-remote-api` |
 
 ### Related docs
 
